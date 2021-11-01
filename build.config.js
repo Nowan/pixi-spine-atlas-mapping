@@ -1,21 +1,25 @@
 module.exports = {
     spritesheets: [
         {
-            target: "portal",
+            target: "src/assets/spritesheets/portal",
             source: "src/assets/images/portal"
         },
         {
-            target: "spineboy",
+            target: "src/assets/spritesheets/spineboy",
             source: "src/assets/images/spineboy"
         },
         {
-            target: "spineboy_full",
+            target: "src/assets/spritesheets/spineboy_full",
             source: ["src/assets/images/portal", "src/assets/images/spineboy"],
             options: {
-                prependFolderName: false,
-                width: 512,
-                height: 512
+                prependFolderName: false
             }
+        }
+    ],
+    spineMappings: [
+        {
+            target: "src/assets/spines/spineboy.json",
+            source: ["src/assets/spritesheets/spineboy", "src/assets/spritesheets/portal"]
         }
     ]
 }

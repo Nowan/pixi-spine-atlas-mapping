@@ -13,7 +13,9 @@
     "lint": "eslint src --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
     "release": "standard-version",
-    "packAndMap": "grunt packAndMap"
+    "pack": "grunt pack",
+    "map": "grunt map",
+    "packAndMap": "grunt pack && grunt map"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
