@@ -3,7 +3,7 @@ const texturePacker = require("free-tex-packer-core");
 const appInfo = require("./package.json");
 
 const DESTINATION_PATH = "src/assets/spritesheets";
-const PATH_PATTERN_TO_EXCLUDE = "";
+const PATH_PATTERN_TO_EXCLUDE = "src/";
 const spineLookupPattern = `${"sourcePath"}(?:-\\d+)?\\.json|png|jpg|jpeg$`;
 
 module.exports = function(grunt) {
@@ -27,10 +27,10 @@ module.exports = function(grunt) {
                 [spineMapConfig.target]: {
                     files: [
                         {
-                            expand: true, src: `${spineMapConfig.target}`, filter: "isFile", mapEndpoint: "target"
+                            expand: true, src: `${spineMapConfig.target}`, basePath: PATH_PATTERN_TO_EXCLUDE, filter: "isFile", mapEndpoint: "target"
                         },
                         ...Array.of(spineMapConfig.source).flat().map(sourcePath => ({
-                            expand: true, src: `${sourcePath}?(-?*).atlas.json`, filter: "isFile", mapEndpoint: "source"
+                            expand: true, src: `${sourcePath}?(-?*).atlas.json`, basePath: PATH_PATTERN_TO_EXCLUDE, filter: "isFile", mapEndpoint: "source"
                         }))
                     ]
                 }
@@ -94,6 +94,10 @@ module.exports = function(grunt) {
                             spine = { data, path: filePath };
                             break;
                         case "source":
+                            if  (f.basePath && filePath.substr(0, f.basePath.length) === f.basePath) {
+                                filePath = filePath.substr(f.basePath.length);
+                            }
+
                             atlases.push({ data, path: filePath })
                             break;
                     }
