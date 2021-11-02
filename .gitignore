@@ -1,4 +1,4 @@
 node_modules/
 dist/
-src/assets/spritesheets/*
-*.attachmentsMap.json
+*.spine.map.json
+*.atlas.*

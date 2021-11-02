@@ -30,7 +30,7 @@ module.exports = function(grunt) {
                             expand: true, src: `${spineMapConfig.target}`, filter: "isFile", mapEndpoint: "target"
                         },
                         ...Array.of(spineMapConfig.source).flat().map(sourcePath => ({
-                            expand: true, src: `${sourcePath}?(-?*).json`, filter: "isFile", mapEndpoint: "source"
+                            expand: true, src: `${sourcePath}?(-?*).atlas.json`, filter: "isFile", mapEndpoint: "source"
                         }))
                     ]
                 }
@@ -65,7 +65,13 @@ module.exports = function(grunt) {
         
         texturePacker(images, options, (files) => {
             for(let item of files) {
-                grunt.file.write(dest + '/' + item.name, item.buffer);
+                const itemNameGroups = item.name.match(/^(?<path>.*)\.(?<extension>.+)$/).groups;
+                if (itemNameGroups.extension === "json") {
+                    const data = JSON.parse(item.buffer.toString());
+                    data.meta.image = data.meta.image.replace(/^(.*)\.(.*)$/, "$1.atlas.$2")
+                    item.buffer = JSON.stringify(data, null, 2);
+                }
+                grunt.file.write(`${dest}/${itemNameGroups.path}.atlas.${itemNameGroups.extension}`, item.buffer);
 			}
             
             done();
@@ -118,7 +124,7 @@ module.exports = function(grunt) {
             }
         }
 
-        const dest = spine.path.replace(".json", ".attachmentsMap.json");
+        const dest = spine.path.replace(".spine.json", ".spine.map.json");
         grunt.file.write(dest, JSON.stringify(mapData, null, 2));
     });
     

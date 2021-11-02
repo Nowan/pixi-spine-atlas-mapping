@@ -18,7 +18,7 @@ module.exports = {
     ],
     spineMappings: [
         {
-            target: "src/assets/spines/spineboy.json",
+            target: "src/assets/spines/spineboy.spine.json",
             source: ["src/assets/spritesheets/spineboy", "src/assets/spritesheets/portal"]
         }
     ]

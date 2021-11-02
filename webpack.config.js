@@ -4,6 +4,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
+const BUILD_DIR = "dist/";
+
 module.exports = {
   mode: 'production',
   devtool: "eval-source-map",
@@ -19,16 +21,16 @@ module.exports = {
             plugins: ["@babel/plugin-transform-async-to-generator"]
           }
         }
-      },
-      {
-        test: [/\.vert$/, /\.frag$/],
-        use: "raw-loader"
-      },
-      {
-        test: /\.(gif|png|jpe?g|svg|xml|wav|json)$/i,
-        use: "file-loader"
       }
     ]
+  },
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, BUILD_DIR)
+  },
+  devServer: {
+    contentBase: path.join(__dirname, BUILD_DIR),
+    serveIndex: true,
   },
   plugins: [
     new CleanWebpackPlugin({
@@ -43,7 +45,8 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: "src/assets/", to: "assets/"
+          from: "src/assets/", 
+          to: "assets/"
         }
       ]
     })

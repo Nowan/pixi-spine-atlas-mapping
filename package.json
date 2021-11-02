@@ -15,7 +15,8 @@
     "release": "standard-version",
     "pack": "grunt pack",
     "map": "grunt map",
-    "packAndMap": "grunt pack && grunt map"
+    "packAndMap": "grunt pack && grunt map",
+    "version": "webpack --version"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
