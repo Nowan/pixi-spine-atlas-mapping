@@ -1,44 +1,13 @@
-const buildConfig = require("./build.config.js");
 const texturePacker = require("free-tex-packer-core");
 const appInfo = require("./package.json");
-
-const DESTINATION_PATH = "src/assets/spritesheets";
-const PATH_PATTERN_TO_EXCLUDE = "src/";
-const spineLookupPattern = `${"sourcePath"}(?:-\\d+)?\\.json|png|jpg|jpeg$`;
+const rawBuildConfig = require("./build.config.js");
+const buildConfig = require("./grunt/BuildConfigParser").parse(rawBuildConfig);
 
 module.exports = function(grunt) {
-    const config = {
-        free_tex_packer: buildConfig.spritesheets.reduce((texturePackerConfig, spritesheetConfig) => {
-            return Object.assign(texturePackerConfig, {
-                [spritesheetConfig.target]: {
-                    files: Array.of(spritesheetConfig.source).flat().map(sourcePath => ({
-                        expand: true, src: `${sourcePath}/*`, basePath: PATH_PATTERN_TO_EXCLUDE, filter: "isFile"
-                    })),
-                    options: Object.assign({
-                        dest: spritesheetConfig.target.split(/[\/\\]/).slice(0, -1).join("/"),
-                        textureName: spritesheetConfig.target.split(/[\/\\]/).pop(),
-                        exporter: "Pixi"
-                    }, spritesheetConfig.options || {})
-                }
-            });
-        }, {}),
-        spineAttachmentsToAtlasesMapper: buildConfig.spineMappings.reduce((spineMapperConfig, spineMapConfig) => {
-            return Object.assign(spineMapperConfig, {
-                [spineMapConfig.target]: {
-                    files: [
-                        {
-                            expand: true, src: `${spineMapConfig.target}`, basePath: PATH_PATTERN_TO_EXCLUDE, filter: "isFile", mapEndpoint: "target"
-                        },
-                        ...Array.of(spineMapConfig.source).flat().map(sourcePath => ({
-                            expand: true, src: `${sourcePath}?(-?*).atlas.json`, basePath: PATH_PATTERN_TO_EXCLUDE, filter: "isFile", mapEndpoint: "source"
-                        }))
-                    ]
-                }
-            });
-        }, {})
-    };
-
-    grunt.initConfig(config);
+    grunt.initConfig({
+        free_tex_packer: buildConfig.texturePacker,
+        spineAttachmentsToAtlasesMapper: buildConfig.spineMapper
+    });
 
     grunt.registerMultiTask("free_tex_packer", 'Grunt free texture packer', function() {
         let done = this.async();
