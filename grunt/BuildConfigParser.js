@@ -3,13 +3,13 @@ const PATH_PATTERN_TO_EXCLUDE = "src/";
 module.exports = class BuildConfigParser {
     static parse(rawBuildConfig) {
         return {
-            texturePacker: _parsePackerConfiguration(rawBuildConfig),
-            spineMapper: _parseMapperConfiguration(rawBuildConfig)
+            texturePacker: _parseTexturePackerConfiguration(rawBuildConfig),
+            spineMapper: _parseSpineMapperConfiguration(rawBuildConfig)
         };
     }
 }
 
-function _parsePackerConfiguration(rawBuildConfig) {
+function _parseTexturePackerConfiguration(rawBuildConfig) {
     return rawBuildConfig.spritesheets.reduce((texturePackerConfig, spritesheetConfig) => {
         return Object.assign(texturePackerConfig, {
             [spritesheetConfig.target]: {
@@ -19,14 +19,15 @@ function _parsePackerConfiguration(rawBuildConfig) {
                 options: Object.assign({
                     dest: spritesheetConfig.target.split(/[\/\\]/).slice(0, -1).join("/"),
                     textureName: spritesheetConfig.target.split(/[\/\\]/).pop(),
-                    exporter: "Pixi"
+                    exporter: "Pixi",
+                    extensionAppendix: "atlas"
                 }, spritesheetConfig.options || {})
             }
         });
     }, {});
 }
 
-function _parseMapperConfiguration(rawBuildConfig) {
+function _parseSpineMapperConfiguration(rawBuildConfig) {
     return rawBuildConfig.spineMappings.reduce((spineMapperConfig, spineMapConfig) => {
         return Object.assign(spineMapperConfig, {
             [spineMapConfig.target]: {

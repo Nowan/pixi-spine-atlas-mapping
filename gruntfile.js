@@ -1,53 +1,13 @@
-const texturePacker = require("free-tex-packer-core");
-const appInfo = require("./package.json");
 const rawBuildConfig = require("./build.config.js");
 const buildConfig = require("./grunt/BuildConfigParser").parse(rawBuildConfig);
 
 module.exports = function(grunt) {
     grunt.initConfig({
-        free_tex_packer: buildConfig.texturePacker,
-        spineAttachmentsToAtlasesMapper: buildConfig.spineMapper
+        spineMapper: buildConfig.spineMapper,
+        texturePacker: buildConfig.texturePacker
     });
 
-    grunt.registerMultiTask("free_tex_packer", 'Grunt free texture packer', function() {
-        let done = this.async();
-        let options = this.options();
-        let dest = options.dest || '';
-        
-        options.appInfo = appInfo;
-        
-        let images = [];
-        
-        this.files.forEach((f) => {
-            f.src.filter((filepath) => {
-                if(grunt.file.exists(filepath)) {
-                    let imagePath = filepath;
-                    if  (f.basePath && imagePath.substr(0, f.basePath.length) === f.basePath) {
-                        imagePath = imagePath.substr(f.basePath.length);
-                    }
-                    
-                    // TODO: generate mapping file for texture atlas for later use in spine metadata remapping
-                    images.push({path: imagePath, contents: grunt.file.read(filepath, {encoding: null})});
-                }
-            });
-        });
-        
-        texturePacker(images, options, (files) => {
-            for(let item of files) {
-                const itemNameGroups = item.name.match(/^(?<path>.*)\.(?<extension>.+)$/).groups;
-                if (itemNameGroups.extension === "json") {
-                    const data = JSON.parse(item.buffer.toString());
-                    data.meta.image = data.meta.image.replace(/^(.*)\.(.*)$/, "$1.atlas.$2")
-                    item.buffer = JSON.stringify(data, null, 2);
-                }
-                grunt.file.write(`${dest}/${itemNameGroups.path}.atlas.${itemNameGroups.extension}`, item.buffer);
-			}
-            
-            done();
-		});
-    });
-
-    grunt.registerMultiTask("spineAttachmentsToAtlasesMapper", 'Grunt spine mapper', function() {
+    grunt.registerMultiTask("spineMapper", 'Grunt spine mapper', function() {
         const mapData = {};
         let spine = null;
         const atlases = [];
@@ -100,7 +60,43 @@ module.exports = function(grunt) {
         const dest = spine.path.replace(".spine.json", ".spine.map.json");
         grunt.file.write(dest, JSON.stringify(mapData, null, 2));
     });
-    
-    grunt.registerTask("pack", ["free_tex_packer"]);
-    grunt.registerTask("map", ["spineAttachmentsToAtlasesMapper"]);
+
+    grunt.config.set("free_tex_packer", grunt.config.get("texturePacker"));
+    grunt.config.set("free_tex_packer_append_extension", extensionAppenderConfig(grunt.config.get("texturePacker")));
+
+    grunt.loadNpmTasks("grunt-free-tex-packer");
+
+    grunt.registerMultiTask("free_tex_packer_append_extension", function() {
+        for (let file of this.files) {
+            for (let srcPath of file.src) {
+                if (grunt.file.exists(srcPath)) {
+                    const { path, nameWithExtension } = srcPath.match(/^(?<path>(?:.*[\\\/])+)(?<nameWithExtension>.*)$/).groups;
+                    const name = nameWithExtension.split(".").shift();
+                    const extension = nameWithExtension.split(".").slice(1).join(".");
+                    const extensionAppendix = file.extensionAppendix;
+
+                    if (!extension.match(extensionAppendix)) {
+                        const destPath = `${path}${name}.${extensionAppendix}.${extension}`;
+
+                        grunt.file.copy(srcPath, destPath);
+                        grunt.file.delete(srcPath);
+                    }
+                
+                }
+            }
+        }
+    })
+
+    grunt.registerTask("texturePacker", function() {
+        for (let target of Object.keys(grunt.config.get("texturePacker"))) {
+            grunt.task.run(`free_tex_packer:${target}`, `free_tex_packer_append_extension:${target}`);
+        }
+    });
 };
+
+function extensionAppenderConfig(rawBuildConfig) {
+    return Object.entries(rawBuildConfig).reduce((extensionConfig, [target, targetConfig]) => ({
+        ...extensionConfig,
+        [target]: { expand: true, src: `${target}.*`, filter: "isFile", extensionAppendix: targetConfig.options.extensionAppendix }
+    }), {})
+}
