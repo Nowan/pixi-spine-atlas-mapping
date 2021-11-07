@@ -7,8 +7,8 @@
     "node": ">=11"
   },
   "scripts": {
-    "build": "npm run packAndMap && webpack",
-    "start": "npm run packAndMap && webpack-dev-server --open --mode=development",
+    "build": "webpack",
+    "start": "webpack-dev-server --open --mode=development",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src --max-warnings 0",
     "lintfix": "npm run lint -- --fix",
@@ -37,7 +37,8 @@
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "webpack-watch-files-plugin": "^1.2.0"
   },
   "dependencies": {
     "eslint": "^6.8.0",

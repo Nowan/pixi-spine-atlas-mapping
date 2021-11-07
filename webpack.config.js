@@ -1,9 +1,11 @@
 const webpack = require("webpack");
 const path = require("path");
+const child_process = require("child_process");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
-
+const WatchExternalFilesPlugin = require("webpack-watch-files-plugin").default;
+console.log(WatchExternalFilesPlugin)
 const BUILD_DIR = "dist/";
 
 module.exports = {
@@ -30,9 +32,14 @@ module.exports = {
   },
   devServer: {
     contentBase: path.join(__dirname, BUILD_DIR),
-    serveIndex: true,
+    serveIndex: true
   },
   plugins: [
+    new WatchExternalFilesPlugin({
+      files: [
+        "build.config.js"
+      ]
+    }),
     new CleanWebpackPlugin({
       root: path.resolve(__dirname, "../")
     }),
@@ -49,6 +56,13 @@ module.exports = {
           to: "assets/"
         }
       ]
-    })
+    }),
+    new class RepackPlugin {
+      apply(compiler) {
+        compiler.hooks.compile.tap('RepackPlugin', (compilation) => {
+          child_process.execSync("npm run packAndMap");
+        });
+      }
+    }
   ]
 };

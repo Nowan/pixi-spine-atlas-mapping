@@ -19,7 +19,11 @@ export default class GameApplication extends Application {
   }
 
   loadAssets() {
-    const spritesheetsPaths = ["assets/spritesheets/portal.atlas.json", "assets/spritesheets/spineboy.atlas.json"];
+    const spritesheetsPaths = [
+      "assets/spritesheets/portal.atlas.json", 
+      "assets/spritesheets/spineboy.atlas.json", 
+      // "assets/spritesheets/spineboy_full.atlas.json"
+    ];
     const spinesPaths = ["assets/spines/spineboy.spine.json"];
 
     return new Promise((resolve, reject) => {
