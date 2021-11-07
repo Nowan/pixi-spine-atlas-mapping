@@ -1,4 +1,4 @@
-import { Application, Loader } from 'pixi.js';
+import { Application, Loader, LoaderResource } from 'pixi.js';
 import { TextureAtlas, Spine } from "pixi-spine";
 
 export default class GameApplication extends Application {
@@ -19,30 +19,76 @@ export default class GameApplication extends Application {
   }
 
   loadAssets() {
+    const spritesheetsPaths = ["assets/spritesheets/portal.atlas.json", "assets/spritesheets/spineboy.atlas.json"];
+    const spinesPaths = ["assets/spines/spineboy.spine.json"];
+
+    return new Promise((resolve, reject) => {
+      this._loadSpritesheets(...spritesheetsPaths).then(spritesheets => {
+        this._loadSpines(spritesheets, ...spinesPaths).then(spines => {
+          resolve(Object.assign({}, spritesheets, spines));
+        })
+      })
+    });
+  }
+
+  _loadSpritesheets(...spritesheetsPaths) {
     return new Promise((resolve, reject) => {
       const loader = new Loader();
 
-      loader.add("assets/spritesheets/portal.atlas.json", "assets/spritesheets/portal.atlas.json");
-      loader.add("assets/spritesheets/spineboy.atlas.json", "assets/spritesheets/spineboy.atlas.json");
-      loader.add("assets/spines/spineboy.spine.map.json", "assets/spines/spineboy.spine.map.json");
-      
-      loader.load((_, resources) => {
-        const atlas = new TextureAtlas();
-        const spineboySpineMap = resources["assets/spines/spineboy.spine.map.json"].data;
+      for (let spritesheetPath of spritesheetsPaths) {
+        loader.add(spritesheetPath, spritesheetPath);
+      }
 
-        for (let [attachmentName, mapEntry] of Object.entries(spineboySpineMap)) {
-          const spritesheet = resources[mapEntry.atlas].spritesheet;
+      loader.load((loader, resources) => {
+        Promise.all(Object.entries(resources).map(([resourceKey, resource]) => new Promise((resolve, reject) => {
+          if (resource.data && resource.type === LoaderResource.TYPE.JSON && resource.data.meta && resource.data.meta.related_multi_packs) {
+            this._loadSpritesheets(...resource.data.meta.related_multi_packs).then(multiPackResources => {
+              resolve(multiPackResources);
+            });
+          }
+          else {
+            resolve({ [resourceKey]: resource });
+          }
+        }))).then((resourceEntries) => {
+          const resources = resourceEntries.reduce((resources, resourceEntry) => Object.assign(resources, resourceEntry), {});
 
-          atlas.addTexture(attachmentName, spritesheet.textures[mapEntry.frame])
-        }
-        
-        // Load json skeleton
-        loader.add("assets/spines/spineboy.spine.json", "assets/spines/spineboy.spine.json", {metadata: {spineAtlas: atlas}});
-        loader.onComplete.add((_, resources) => resolve(resources));
+          resolve(resources);
+        })
       });
     });
   }
 
-  
+  _loadSpines(spritesheets, ...spinesPaths) {
+    return Promise.all(spinesPaths.map(spinePath => this._loadSpine(spritesheets, spinePath))).then(resourceEntries => {
+      const resources = resourceEntries.reduce((resources, resourceEntry) => Object.assign(resources, resourceEntry), {});
+
+      return resources;
+    });
+  }
+
+  _loadSpine(spritesheets, spinePath) {
+    return new Promise((resolve, reject) => {
+      const spineMapPath = spinePath.replace(".json", ".map.json");
+      const loader = new Loader();
+
+      loader.add(spineMapPath, spineMapPath);
+      loader.load((_, resources) => {
+        const spineMap = resources[spineMapPath].data;
+        const atlas = new TextureAtlas();
+        for (let [attachmentName, mapEntry] of Object.entries(spineMap)) {
+          const spritesheet = spritesheets[mapEntry.atlas].spritesheet;
+
+          atlas.addTexture(attachmentName, spritesheet.textures[mapEntry.frame])
+        }
+          
+        // Load json skeleton
+        const loader = new Loader();
+        loader.add(spinePath, spinePath, {metadata: {spineAtlas: atlas}});
+        loader.load((_, resources) => resolve({
+          [spinePath]: resources[spinePath]
+        }));
+      });
+    });
+  }
 }
 

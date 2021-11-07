@@ -6,14 +6,15 @@ module.exports = {
         },
         {
             target: "src/assets/spritesheets/spineboy",
-            source: "src/assets/images/spineboy"
+            source: "src/assets/images/spineboy",
+            options: {
+                width: 512,
+                height: 512
+            }
         },
         {
             target: "src/assets/spritesheets/spineboy_full",
-            source: ["src/assets/images/portal", "src/assets/images/spineboy"],
-            options: {
-                prependFolderName: false
-            }
+            source: ["src/assets/images/portal", "src/assets/images/spineboy"]
         }
     ],
     spineMappings: [

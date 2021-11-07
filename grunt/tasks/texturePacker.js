@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask(FILE_NAME, function() {
         for (let target of Object.keys(config)) {
-            grunt.task.run(`free_tex_packer:${target}`, `texturePackerAtlasRename:${target}`);
+            grunt.task.run(`free_tex_packer:${target}`, `texturePackerAggregateMultiPacks:${target}`, `texturePackerAtlasRename:${target}`);
         }
     });
 };

@@ -17,7 +17,16 @@ module.exports = function(grunt) {
                         switch (extension) {
                             case "json":
                                 const atlasData = grunt.file.readJSON(srcPath);
-                                atlasData.meta.image = atlasData.meta.image.replace(/^(.+)\.(.+)$/, `$1.${extensionAppendix}.$2`);
+
+                                if (atlasData.meta.image) {
+                                    atlasData.meta.image = atlasData.meta.image.replace(/^(.+)\.(.+)$/, `$1.${extensionAppendix}.$2`);
+                                }
+
+                                if (atlasData.meta.related_multi_packs) {
+                                    atlasData.meta.related_multi_packs = atlasData.meta.related_multi_packs.map(multiPackPath => (
+                                        multiPackPath.replace(/^(.+)\.(.+)$/, `$1.${extensionAppendix}.$2`)
+                                    ))
+                                }
 
                                 grunt.file.write(destPath, JSON.stringify(atlasData, null, 2));
                                 grunt.file.delete(srcPath);

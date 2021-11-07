@@ -33,6 +33,8 @@ module.exports = function(grunt) {
             for (let attachmentsData of Object.values(skinData.attachments)) {
                 for (let attachmentPath of Object.keys(attachmentsData)) {
                     for (let atlas of atlases) {
+                        if (atlas.data.meta.related_multi_packs) continue;
+
                         const framesTexturesPaths = Object.keys(atlas.data.frames);
                         const matchingFrameTexturePath = framesTexturesPaths.find(frameTexturePath => frameTexturePath.match(attachmentPath));
         
