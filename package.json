@@ -29,6 +29,8 @@
     "grunt": "^1.4.1",
     "grunt-free-tex-packer": "^0.2.8",
     "html-webpack-plugin": "^3.2.0",
+    "jit-grunt": "^0.10.0",
+    "load-grunt-config": "^4.0.1",
     "raw-loader": "^3.1.0",
     "standard-version": "^9.1.0",
     "terser-webpack-plugin": "^2.2.1",
